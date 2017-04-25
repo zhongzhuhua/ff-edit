@@ -1,0 +1,219 @@
+html,
+body,
+div,
+button,
+input,
+nav,
+section {
+  margin: 0;
+  padding: 0;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+
+/* ==== 重写 ace 样式 ==== */
+
+.ace_print-margin {
+  background: #fff !important;
+}
+
+.ace_error {
+  background-image: none !important;
+}
+
+.ace_warning {
+  background-image: none !important;
+}
+
+
+/* ==== 重写 ace 样式 ==== */
+
+$theme-low: #d398ef;
+$theme-main: #ae2cea;
+$theme-deep: #7605aa;
+$tree-width: 260px;
+$view-width: 360px;
+$top-height: 40px;
+body {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 12px;
+  color: #333;
+}
+
+.hidden {
+  display: none;
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+// 顶部
+$top: 44px;
+.v-top {
+  height: $top;
+  line-height: $top;
+  color: #fff;
+  background-color: $theme-deep;
+  nav {
+    margin-left: 10px;
+    > div {
+      display: inline-block;
+      width: 100px;
+      font-size: 1.12em;
+      text-align: center;
+      cursor: pointer;
+    }
+    > div:hover {
+      background-color: $theme-main;
+    }
+  }
+}
+
+// 切换项目
+.v-frame {
+  display: none;
+  .mask {
+    position: absolute;
+    width: 100%;
+    top: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, .6);
+    .content {
+      padding-top: 20px;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      background-color: #fff;
+      box-shadow: 0 0 3px 3px rgba(0, 204, 204, .5);
+      transform: translate(-50%, -50%);
+    }
+    .row {
+      padding: 10px 30px;
+    }
+    input,
+    select {
+      height: 30px;
+      line-height: 30px;
+    }
+    input {
+      width: 180px;
+      padding: 0 5px;
+    }
+    .left {
+      display: inline-block;
+      padding-right: 10px;
+      text-align: center;
+    }
+    .button {
+      margin-top: 10px;
+      height: 46px;
+      line-height: 46px;
+      text-align: center;
+      border-top: 1px solid #eee;
+      cursor: pointer;
+      font-size: 1.2em;
+      color: #bbb;
+      div:nth-of-type(2) {
+        color: $theme-deep;
+        border-left: 1px solid #eee;
+        box-sizing: border-box;
+      }
+    }
+  }
+}
+
+.v-main {
+  position: absolute;
+  width: 100%;
+  top: $top;
+  bottom: 0;
+  min-width: 1000px;
+}
+
+.v-tree,
+.v-code,
+.v-view {
+  position: absolute;
+  height: 100%;
+}
+
+.v-tree {
+  left: 0;
+  width: $tree-width;
+  overflow: auto;
+  .example {
+    padding-left: 20px;
+    line-height: $top-height;
+    border-bottom: 1px solid $theme-main;
+  }
+  .tree-button {
+    position: absolute;
+    padding: 10px 0;
+    width: 100px;
+    bottom: 10px;
+    left: 50%;
+    margin-left: -50px;
+    background-color: #fff;
+    color: $theme-main;
+    border: 1px solid $theme-main;
+    text-align: center;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  .tree-button:active {
+    color: #fff;
+    background-color: $theme-deep;
+  }
+}
+
+.v-view {
+  right: 0;
+  width: $view-width;
+  padding: 0 30px;
+  box-sizing: border-box;
+  .mobile {
+    margin-top: 20px;
+    height: 80vh;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+}
+
+.v-code {
+  right: $view-width;
+  left: $tree-width;
+  border: 1px solid #ccc;
+  border-top: 0;
+  border-bottom: 0;
+  box-sizing: border-box;
+  // padding-top: $top-height + 1;
+  overflow: hidden;
+  > .code {
+    height: 100%;
+  }
+  /*
+  #nav {
+    position: absolute;
+    width: 100%;
+    top: 0;
+    line-height: $top-height;
+    border-bottom: 1px solid $theme-main;
+    background-color: #fff;
+    color: $theme-main;
+    text-align: center;
+    cursor: pointer;
+    user-select: none;
+    .choose {
+      color: #fff;
+      background-color: $theme-main;
+    }
+  }
+  */
+}
