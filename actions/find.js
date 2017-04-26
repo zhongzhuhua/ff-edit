@@ -1,5 +1,6 @@
 // Controller 路由器
 var utils = require('../server/utils');
+var reg = require('../components/reg');
 var rootPath = process.cwd() + '/';
 
 module.exports = function(app) {
@@ -36,7 +37,7 @@ module.exports = function(app) {
     // 文件名称
     var fileName = data.fileName || 'index.html';
 
-    var fileName = rootPath + 'examples/' + frame + '/src/' + name + '/' + fileName;
+    fileName = rootPath + 'examples/' + frame + '/src/' + name + '/' + fileName;
     var fileContent = utils.readFileSync(fileName);
     res.json({
       code: '000000',

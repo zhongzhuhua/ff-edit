@@ -10,6 +10,7 @@ var path = require('path');
 var fs = require('fs');
 var os = require('os');
 var stat = fs.stat;
+var query = require('querystring');
 
 /* 读取目录下所有文件
  * @param root 根目录
@@ -112,6 +113,33 @@ function createFile(root, content) {
 };
 
 exports.createFile = createFile;
+
+// 删除单个文件
+exports.rmFile = function(root) {
+  return fs.unlinkSync(root);
+};
+
+// 删除文件夹
+function rmFolder(url) {
+  var files = [];
+  if (fs.existsSync(url)) {
+    files = fs.readdirSync(url);
+    files.forEach(function(file, index) {
+      var curPath = path.join(url, file);
+      if (fs.statSync(curPath).isDirectory()) {
+        deleteFolderRecursive(curPath);
+      } else {
+        fs.unlinkSync(curPath);
+      }
+    });
+    //清除文件夹
+    return fs.rmdirSync(url);
+  } else {
+    return true;
+  }
+};
+
+exports.rmFolder = rmFolder;
 
 // 获取 ip 地址
 function getIp() {
@@ -250,12 +278,17 @@ function createExistsSync(src) {
 };
 
 exports.createExistsSync = function(src) {
-  createExistsSync(src);
+  return createExistsSync(src);
 };
 
 // 读取文件内容
 exports.readFileSync = function(src) {
   return fs.readFileSync(src, 'utf-8');
+};
+
+// 重命名文件
+exports.rename = function(oldPath, newPath) {
+  return fs.renameSync(oldPath, newPath);
 };
 
 /**
@@ -264,15 +297,15 @@ exports.readFileSync = function(src) {
  * @param callback 回调函数
  */
 exports.getPostData = function(req, callback) {
-    var result = '';
-    req.on('data', function(data) {
-        result += data;
-    });
-    req.on('end', function() {
-        result = result == null || result == '' ? null : query.parse(result);
+  var result = '';
+  req.on('data', function(data) {
+    result += data;
+  });
+  req.on('end', function() {
+    result = result == null || result == '' ? null : query.parse(result);
 
-        if (callback) {
-            callback(result);
-        }
-    });
+    if (callback) {
+      callback(result);
+    }
+  });
 };

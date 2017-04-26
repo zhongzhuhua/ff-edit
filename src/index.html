@@ -5,20 +5,22 @@
   <meta charset="UTF-8">
   <title>在线编辑器</title>
   <link rel="stylesheet" href="../public/ztree/css/zTreeStyle/zTreeStyle.css">
-  <script src="../public/ace/ace.js"></script>
-  <script src="../public/ace/ext-language_tools.js"></script>
+  <script src="../public/ace-min/ace.js"></script>
+  <script src="../public/ace-min/ext-language_tools.js"></script>
   <script src="../public/beautify-web/beautify-html.js"></script>
   <script src="../public/jquery.js"></script>
   <script src="../public/ztree/js/jquery.ztree.all.min.js"></script>
   <script src="../public/ztree/js/jquery.ztree.core.min.js"></script>
+  <script src="../public/ztree/js/jquery.ztree.exedit.min.js"></script>
 </head>
 
 <body>
   <div class="v-top">
     <nav>
       <div id="btnChange">切换项目</div>
-      <div id="btnSave">保存文件</div>
       <div id="btnRun">构建项目</div>
+      <div id="btnSave">保存文件</div>
+      <div id="btnAdd">新建文件</div>
     </nav>
   </div>
   <div class="v-main">
@@ -30,13 +32,14 @@
       </div>
     </div>
     <div id="code" class="v-code">
-      <!-- <div id="editor"></div> -->
+      <div id="editor" class="code"></div>
     </div>
     <div class="v-tree">
       <ul id="tree" class="ztree">
       </ul>
     </div>
   </div>
+  <!-- 选择框架 -->
   <div id="dialogFrame" class="v-frame">
     <div class="mask">
       <div class="content">
@@ -58,6 +61,30 @@
       </div>
     </div>
   </div>
+  <!-- 选择框架 -->
+  <!-- 新增文件文件夹 -->
+  <div id="dialogAdd" class="v-frame">
+    <div class="mask">
+      <div class="content">
+        <div class="row">
+          <span class="left">新建类型</span>
+          <select id="addFileType">
+            <option value="file" selected>文件</option>
+            <option value="dir">文件夹</option>
+          </select>
+        </div>
+        <div class="row">
+          <span class="left">文件名称</span>
+          <input id="addFileName" maxlength="16" placeholder="请输入文件/文件夹名称" />
+        </div>
+        <div class="flex button">
+          <div id="btnAddCancel" class="flex-1">取消</div>
+          <div id="btnAddOk" class="flex-1">确定</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- 新增文件文件夹 -->
 </body>
 
 </html>

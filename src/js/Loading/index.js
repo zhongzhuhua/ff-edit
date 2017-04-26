@@ -12,14 +12,14 @@ exports.open = function() {
   show = true;
   $loading.show();
   timer = setTimeout(function() {
-
+    show = false;
+    $loading.hide();
+    alert('网络连接超时');
   }, 20000);
 };
 
 exports.close = function() {
-  setTimeout(function() {
-    show = false;
-    $loading.hide();
-    clearTimeout(timer);
-  }, 500);
+  show = false;
+  $loading.hide();
+  clearTimeout(timer);
 };

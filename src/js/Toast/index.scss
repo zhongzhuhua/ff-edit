@@ -1,0 +1,17 @@
+.c-toast {
+  position: fixed;
+  padding: .5em 1em;
+  display: none;
+  top: 50%;
+  left: 50%;
+  color: #fff;
+  font-size: 12px;
+  border-radius: 5px;
+  background-color: rgba(0, 0, 0, .8);
+  transform: translate(-50%, -50%);
+  z-index: 9992;
+}
+
+.c-toast:empty:after {
+  content: '操作成功'
+}

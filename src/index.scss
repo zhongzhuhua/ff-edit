@@ -16,17 +16,8 @@ section {
 /* ==== 重写 ace 样式 ==== */
 
 .ace_print-margin {
-  background: #fff !important;
+  background: transparent !important;
 }
-
-.ace_error {
-  background-image: none !important;
-}
-
-.ace_warning {
-  background-image: none !important;
-}
-
 
 /* ==== 重写 ace 样式 ==== */
 
@@ -85,6 +76,7 @@ $top: 44px;
     top: 0;
     bottom: 0;
     background-color: rgba(0, 0, 0, .6);
+    z-index: 5000;
     .content {
       padding-top: 20px;
       position: absolute;

@@ -1,5 +1,7 @@
 import './index.scss';
 import Loading from './js/Loading';
+import Toast from './js/Toast';
+import Reg from '../components/reg';
 
 // 是否正在提交中
 var issubmit = false;
@@ -7,19 +9,29 @@ var issubmit = false;
 var state = {
   fileName: ''
 };
-// 初始化插件
+// 当前选中的文件夹
+var chooseDirPath = '';
+// 选中的文件夹
+var chooseNode = null;
+var $addFileName = $('#addFileName');
+var $addFileType = $('#addFileType');
+// 弹窗
 var $dialogFrame = $('#dialogFrame');
-// var editor = ace.edit('editor');
+var $dialogAdd = $('#dialogAdd');
+// 初始化插件
 var $codeEditor = $('#codeEditor');
 var $frame = $('#frame');
 var $name = $('#name');
 var $code = $('#code');
 var $content = $('#content');
+// 创建编辑器
+ace.require('ace/ext/language_tools');
+var editor = ace.edit('editor');
+editor.$blockScrolling = Infinity;
+// editor.setTheme('ace/theme/xcode');
+editor.setTheme('ace/theme/crimson_editor');
 
 function init() {
-  // 创建编辑器
-  ace.require('ace/ext/language_tools');
-  // editor.setTheme('ace/theme/crimson-editor');
   var frame = request('frame');
   var name = request('name');
   if (frame != '') {
@@ -27,6 +39,14 @@ function init() {
   }
   $name.val(request('name'));
   find();
+};
+
+// 判断是否可以编辑
+function ztreeEdit(treeId, treeNode) {
+  if (treeNode.pId == null || treeNode.pId == '') {
+    return false;
+  }
+  return true;
 };
 
 // 请求数据
@@ -53,6 +73,7 @@ function find() {
       issubmit = false;
       Loading.close();
       if (data.code == '000000') {
+        editor.getSession().setValue('');
         data = data.data;
         var project = data.name;
         var files = data.files;
@@ -66,7 +87,7 @@ function find() {
             nodes.push(files[key]);
           }
         }
-        $.fn.zTree.init($('#tree'), {
+        var zTreeObj = $.fn.zTree.init($('#tree'), {
           data: {
             simpleData: {
               enable: true
@@ -76,22 +97,118 @@ function find() {
               parent: true
             }
           },
+          view: {
+            dblClickExpand: false
+          },
+          edit: {
+            drag: {
+              isMove: false,
+              isCopy: false,
+              next: false,
+              prev: false
+            },
+            enable: true,
+            showRemoveBtn: ztreeEdit,
+            showRenameBtn: ztreeEdit
+          },
           callback: {
             onClick: function(event, treeId, treeNode) {
               if (treeNode && !treeNode.isParent) {
-                getFile(treeNode.key);
+                var filePath = ztreeGetFilePath(treeNode);
+                getFile(filePath);
               }
+            },
+            // 双击添加文件
+            beforeDblClick: function(treeId, treeNode) {
+              if (treeNode && treeNode.isParent) {
+                chooseDirPath = ztreeGetFilePath(treeNode);
+                chooseNode = treeNode;
+                $dialogAdd.show();
+              }
+              return false;
+            },
+            // 重命名节点
+            beforeRename: function(treeId, treeNode, newName) {
+              var treeObj = $.fn.zTree.getZTreeObj(treeId);
+              if (newName == null || newName == '') {
+                Toast.open(Reg.fileNameEmpty);
+                treeObj.cancelEditName();
+              } else if (!Reg.checkFileName(newName)) {
+                Toast.open(Reg.fileNameError);
+                treeObj.cancelEditName();
+              } else {
+                var key = ztreeGetFilePath(treeNode);
+                var oldName = treeNode.name;
+                if (newName == oldName) {
+                  return true;
+                } else {
+                  newName = key.replace(/[^\/]*$/, newName);
+                  var result = rename(key, newName);
+                  if (!result) {
+                    treeObj.cancelEditName();
+                    return false;
+                  }
+                  return true;
+                }
+              }
+              return false;
+            },
+            // 删除文件
+            beforeRemove: function(treeId, treeNode) {
+              var result = removeFile(treeNode);
+              return result;
             }
           }
         }, nodes);
         setPageUrl();
       }
     },
-    error: function() {
+    error: AjaxError
+  });
+};
+
+// 获取文件名称
+function ztreeGetFilePath(treeNode) {
+  var fileName = '';
+  if (treeNode) {
+    var nodes = treeNode.getPath();
+    for (var key in nodes) {
+      var node = nodes[key];
+      fileName += node.name + '/';
+    }
+  }
+  return fileName.replace(/\/$/, '');
+};
+
+// 重命名
+function rename(oldName, newName) {
+  if (issubmit) {
+    return;
+  }
+  issubmit = true;
+  Loading.open();
+  var result = false;
+  $.ajax({
+    url: '/actions/rename',
+    async: false,
+    data: {
+      frame: mydata.frame,
+      name: mydata.name,
+      oldName: oldName,
+      newName: newName
+    },
+    success: function(data) {
       issubmit = false;
       Loading.close();
-    }
+      if (data.code == '000000') {
+        result = true;
+      } else {
+        Toast.open('重命名文件失败，请确保文件名有效');
+      }
+    },
+    error: AjaxError
   });
+  return result;
 };
 
 // 设置页面
@@ -104,13 +221,15 @@ function setPageUrl() {
   }
   link = link.replace(/&*____\d+____/, '');
   var time = '&____' + new Date().getTime() + '____';
-  console.log(time);
   $content.attr('src', link.indexOf('?') == -1 ? (link + '?' + time) : (link + time));
 };
 
 // 获取文件内容
 function getFile(fileName) {
   if (issubmit || fileName == null || fileName == '' || fileName.indexOf('.') < 1) {
+    return;
+  }
+  if (fileName == state.fileName) {
     return;
   }
   issubmit = true;
@@ -135,38 +254,18 @@ function getFile(fileName) {
           codeType = 'js';
         }
 
-        // var clazz = 'code ' + ($frame.val().indexOf('react') > -1 ? 'react' : '') + ' code-' + codeType;
-        // $codeEditor.attr('class', clazz);
-        $code.html($('<div id="editor" class="code ' + ($frame.val().indexOf('react') > -1 ? 'react' : '') + ' code-' + codeType + '"></div>'));
-        var editor = ace.edit('editor');
-        editor.setTheme('ace/theme/crimson-editor');
         if (codeType == 'html') {
           editor.getSession().setMode('ace/mode/html');
-          editor.setOptions({
-            enableBasicAutocompletion: true,
-            indent_size: 2
-          });
         } else if (codeType == 'js') {
-          editor.getSession().setMode('ace/mode/javascript');
-          editor.setOptions({
-            enableBasicAutocompletion: true,
-            indent_size: 2
-          });
+          editor.getSession().setMode('ace/mode/jsx');
         } else {
           editor.getSession().setMode('ace/mode/scss');
-          editor.setOptions({
-            enableBasicAutocompletion: true,
-            indent_size: 2
-          });
         }
         editor.getSession().setValue(data.data || '');
         state.fileName = fileName;
       }
     },
-    error: function() {
-      issubmit = false;
-      Loading.close();
-    }
+    error: AjaxError
   });
 };
 
@@ -178,7 +277,7 @@ function writeHtml() {
   issubmit = true;
   Loading.open();
   $.ajax({
-    url: '/actions/opeBuild',
+    url: '/actions/build',
     dataType: 'json',
     data: mydata,
     success: function(data) {
@@ -186,12 +285,11 @@ function writeHtml() {
       Loading.close();
       if (data.code == '000000') {
         setPageUrl();
+      } else {
+        Toast.open('构建失败，请确保引用文件不被删除且无语法错误');
       }
     },
-    error: function() {
-      issubmit = false;
-      Loading.close();
-    }
+    error: AjaxError
   });
 };
 
@@ -215,9 +313,7 @@ function saveFile() {
       issubmit = false;
       console.log(data);
     },
-    error: function() {
-      issubmit = false;
-    }
+    error: AjaxError
   });
 };
 
@@ -225,6 +321,86 @@ function saveFile() {
 function request(key) {
   var s = location.search.match(new RegExp('[?&]' + key + '=([^&]*)(&?)', 'i'));
   return (s == undefined || s == 'undefined' ? '' : s ? s[1] : s).replace(/[\<\>]/g, '');
+};
+
+// 添加文件文件夹
+function addFile() {
+  var fileName = $.trim($('#addFileName').val());
+  if (issubmit || !chooseDirPath) {
+    return;
+  }
+  if (fileName == null || fileName == '') {
+    Toast.open(Reg.fileNameEmpty);
+    return;
+  }
+  if (!Reg.checkFileName(fileName)) {
+    Toast.open(Reg.fileNameError);
+    return;
+  }
+  issubmit = true;
+  Loading.open();
+  $.ajax({
+    url: '/actions/addFile',
+    type: 'get',
+    dataType: 'json',
+    data: {
+      frame: mydata.frame,
+      name: mydata.name,
+      filePath: chooseDirPath,
+      fileName: fileName,
+      fileType: $addFileType.val()
+    },
+    success: function(data) {
+      issubmit = false;
+      Loading.close();
+      if (data.code != '000000') {
+        Toast.open(data.msg);
+      } else {
+        var treeObj = $.fn.zTree.getZTreeObj('tree');
+        treeObj.addNodes(chooseNode, {
+          name: fileName,
+          isParent: $addFileType.val() != 'file'
+        });
+        $dialogAdd.hide();
+      }
+    },
+    error: AjaxError
+  });
+};
+
+// 删除文件文件夹
+function removeFile(node) {
+  var result = false;
+  var fileName = ztreeGetFilePath(node);
+  if (fileName == null || fileName == '') {
+    Toast.open('请选择要删除的文件文件夹');
+    return result;
+  }
+  issubmit = true;
+  Loading.open();
+  $.ajax({
+    url: '/actions/removeFile',
+    async: false,
+    dataType: 'json',
+    data: {
+      frame: mydata.frame,
+      name: mydata.name,
+      fileName: fileName,
+      fileType: node.isParent ? 'dir' : 'file'
+    },
+    success: function(data) {
+      issubmit = false;
+      Loading.close();
+      if (data.code != '000000') {
+        Toast.open(data.msg);
+      } else {
+        result = true;
+      }
+    },
+    error: AjaxError
+  });
+
+  return result;
 };
 
 // 绑定事件
@@ -245,6 +421,21 @@ function bindEvent() {
     saveFile();
   });
 
+  // 取消新增文件
+  $('#btnAddCancel').on('click', function() {
+    $dialogAdd.hide();
+  });
+
+  // 确定新增文件
+  $('#btnAddOk').on('click', function() {
+    addFile();
+  });
+
+  // 新建文件
+  $('#btnAdd').on('click', function() {
+    Toast.open('请双击树节点的文件夹');
+  });
+
   // 选择项目
   $('#btnChooseProject').on('click', function() {
     find();
@@ -258,7 +449,6 @@ function bindEvent() {
   // 按下两次 ctrl 键执行 btnRun
   var isRun = false;
   $(document).on('keyup', function(e) {
-    console.log(e);
     var num = e.keyCode;
     if (num == 17) {
       if (isRun) {
@@ -270,6 +460,12 @@ function bindEvent() {
       isRun = false;
     }
   });
+};
+
+function AjaxError() {
+  issubmit = false;
+  Loading.close();
+  Toast.open('网络连接失败');
 };
 
 $(function() {
