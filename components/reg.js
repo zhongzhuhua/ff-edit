@@ -1,10 +1,10 @@
 exports.frame = /^[0-9A-Za-z]+$/;
 exports.name = /^[0-9A-Za-z\-]+$/;
-exports.checkFilePath = function(str) {
+exports.checkFilePath = function(str, update) {
   if (str == null || str == '') {
     return false;
   }
-  if (str.indexOf('index') == 0) {
+  if (!update && str.indexOf('index') == 0) {
     return false;
   }
   var result = /^[0-9A-Za-z\-\.\/]+$/.test(str);

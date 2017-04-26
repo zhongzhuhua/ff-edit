@@ -47,7 +47,7 @@ module.exports = function(app) {
           // 文件内容
           var content = data.content;
 
-          if (!reg.frame.test(frame) || !reg.name.test(name) || !reg.checkFilePath(fileName)) {
+          if (!reg.frame.test(frame) || !reg.name.test(name) || !reg.checkFilePath(fileName, true)) {
             resolve(error.SaveFileError);
             return;
           }
@@ -160,9 +160,6 @@ module.exports = function(app) {
     // 类型 file = 文件，其他则默认文件夹
     var fileType = data.fileType || 'dir';
 
-    console.log(frame);
-    console.log(name);
-    console.log(fileName);
     if (!reg.frame.test(frame) || !reg.name.test(name) || !reg.checkFilePath(fileName)) {
       res.json(error.RemoveFileError);
       return;

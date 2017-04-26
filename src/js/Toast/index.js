@@ -5,7 +5,7 @@ $('body').append($toast);
 
 var show = false;
 var timer = null;
-exports.open = function(msg) {
+exports.open = function(msg, times) {
   if (show) {
     return;
   }
@@ -15,7 +15,7 @@ exports.open = function(msg) {
   timer = setTimeout(function() {
     show = false;
     $toast.hide();
-  }, 3000);
+  }, times || 3000);
 };
 
 exports.close = function() {

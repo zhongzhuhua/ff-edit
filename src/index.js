@@ -311,7 +311,11 @@ function saveFile() {
     },
     success: function(data) {
       issubmit = false;
-      console.log(data);
+      if (data.code == '000000') {
+        Toast.open('文件保存成功', 1000);
+      } else {
+        Toast.open(data.msg);
+      }
     },
     error: AjaxError
   });
@@ -446,6 +450,11 @@ function bindEvent() {
     $dialogFrame.hide();
   });
 
+  // 快捷键说明
+  $('#btnKeycode').on('click', function() {
+    Toast.open('<div>按两下 ctrl 执行构建</div><div>按一下 ctrl 再按一下 alt 执行文件保存</div>');
+  });
+
   // 按下两次 ctrl 键执行 btnRun
   var isRun = false;
   $(document).on('keyup', function(e) {
@@ -456,6 +465,11 @@ function bindEvent() {
         isRun = false;
       }
       isRun = true;
+    } else if (num == 18) {
+      if (isRun) {
+        saveFile();
+        isRun = false;
+      }
     } else {
       isRun = false;
     }
