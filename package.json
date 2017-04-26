@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "async": "^2.3.0",
     "autoprefixer": "^6.7.7",
     "babel": "^6.23.0",
     "babel-cli": "^6.24.1",

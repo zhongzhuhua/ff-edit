@@ -1,6 +1,8 @@
 // Controller 路由器
 var utils = require('../server/utils');
+var copySync = require('../server/copySync');
 var reg = require('../components/reg');
+var error = require('../components/error');
 var rootPath = process.cwd() + '/';
 
 module.exports = function(app) {
@@ -17,13 +19,57 @@ module.exports = function(app) {
     projectName = 'examples/' + frame + '/src/' + name;
 
     var filePath = rootPath + projectName;
-    var data = getTreeNode(filePath);
-    res.json({
-      code: '000000',
-      data: {
-        name: projectName,
-        files: data
+    var fileDistPath = 'examples/' + frame + '/dist/' + name;
+    return new Promise((resolve) => {
+      try {
+        // 文件不存在，就 copy 一份文件
+        if (!utils.isExistsSync(filePath)) {
+          utils.createExistsSync(filePath);
+          copySync.copy(rootPath + 'examples/' + frame + '/src/demo', filePath, function(err) {
+            if (err) {
+              try {
+                utils.rmFolder(filePath);
+              } catch (e) {}
+              resolve(error.FindProjectError);
+            } else {
+              copySync.copy(rootPath + 'examples/' + frame + '/dist/demo', fileDistPath, function(err) {
+                if (err) {
+                  try {
+                    utils.rmFolder(filePath);
+                  } catch (e) {}
+                  resolve(error.FindProjectError);
+                } else {
+                  var data = getTreeNode(filePath);
+                  resolve({
+                    code: '000000',
+                    data: {
+                      name: projectName,
+                      files: data
+                    }
+                  });
+                }
+              });
+            }
+          });
+        } else {
+          var data = getTreeNode(filePath);
+          resolve({
+            code: '000000',
+            data: {
+              name: projectName,
+              files: data
+            }
+          });
+        }
+      } catch (e) {
+        console.log(e.message);
+        try {
+          utils.rmFolder(filePath);
+        } catch (e) {}
+        resolve(error.Error);
       }
+    }).then((result) => {
+      res.json(result);
     });
   });
 

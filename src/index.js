@@ -3,6 +3,19 @@ import Loading from './js/Loading';
 import Toast from './js/Toast';
 import Reg from '../components/reg';
 
+jQuery.ajaxSetup({
+  dataType: 'json',
+  beforeSend: function() {
+    var name = $.trim($name.val());
+    if (name == '' || name == 'demo') {
+      if (this.url.indexOf('/actions/find') == -1) {
+        Toast.open('demo项目不能修改');
+        return false;
+      }
+    }
+  }
+});
+
 // 是否正在提交中
 var issubmit = false;
 // 当前操作的文件
@@ -32,12 +45,18 @@ editor.$blockScrolling = Infinity;
 editor.setTheme('ace/theme/crimson_editor');
 
 function init() {
-  var frame = request('frame');
-  var name = request('name');
-  if (frame != '') {
-    $frame.val(request('frame'));
+  var hash = decodeURIComponent(location.hash);
+  hash = hash == null ? '|' : hash.replace(/#/, '');
+  if (hash.indexOf('|') == -1) {
+    hash = '|';
   }
-  $name.val(request('name'));
+  var arrs = hash.split('|');
+  var frame = arrs[0];
+  var name = arrs[1];
+  if (frame != '') {
+    $frame.val(frame);
+  }
+  $name.val(name);
   find();
 };
 
@@ -59,16 +78,15 @@ function find() {
   state.fileName = '';
   issubmit = true;
   Loading.open();
-  var frame = $frame.val();
-  var name = $name.val();
-  mydata = {
+  var frame = $.trim($frame.val());
+  var name = $.trim($name.val());
+  var myparam = {
     name: name,
     frame: frame
   };
   $.ajax({
     url: '/actions/findByName',
-    dataType: 'json',
-    data: mydata,
+    data: myparam,
     success: function(data) {
       issubmit = false;
       Loading.close();
@@ -77,6 +95,13 @@ function find() {
         data = data.data;
         var project = data.name;
         var files = data.files;
+        // 成功读取之后赋值
+        mydata = {
+          frame: myparam.frame,
+          name: myparam.name
+        };
+
+        location.hash = '#' + encodeURIComponent(frame + '|' + name);
 
         // 文件夹排序
         var nodes = [];
@@ -236,7 +261,6 @@ function getFile(fileName) {
   Loading.open();
   $.ajax({
     url: '/actions/findFile',
-    dataType: 'json',
     data: {
       frame: mydata.frame,
       name: mydata.name,
@@ -278,7 +302,6 @@ function writeHtml() {
   Loading.open();
   $.ajax({
     url: '/actions/build',
-    dataType: 'json',
     data: mydata,
     success: function(data) {
       issubmit = false;
@@ -302,7 +325,6 @@ function saveFile() {
   $.ajax({
     url: '/actions/saveFile',
     type: 'post',
-    dataType: 'json',
     data: {
       name: mydata.name,
       frame: mydata.frame,
@@ -346,7 +368,6 @@ function addFile() {
   $.ajax({
     url: '/actions/addFile',
     type: 'get',
-    dataType: 'json',
     data: {
       frame: mydata.frame,
       name: mydata.name,
@@ -385,7 +406,6 @@ function removeFile(node) {
   $.ajax({
     url: '/actions/removeFile',
     async: false,
-    dataType: 'json',
     data: {
       frame: mydata.frame,
       name: mydata.name,

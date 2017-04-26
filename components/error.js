@@ -23,6 +23,10 @@ module.exports = {
     code: '130000',
     msg: '删除文件或删除文件夹失败'
   },
+  FindProjectError: {
+    code: '140000',
+    msg: '读取项目文件异常'
+  },
   Error: {
     code: '-1',
     msg: '系统异常'

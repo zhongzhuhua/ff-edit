@@ -273,6 +273,7 @@ exports.createExists = function(src) {
   createExists(src);
 };
 
+// 创建文件夹
 function createExistsSync(src) {
   fs.mkdirSync(src);
 };
