@@ -29,7 +29,7 @@ plugins.push(uglifyPlug);
 
 // 配置是否热更新，是否需要 demo
 var entryMap = {
-  'vendor': ['react', 'react-dom', 'react-router-dom', 'reqwest'],
+  'vendor': ['jquery'],
   'index': ['./index.js']
 };
 plugins.push(new webpack.optimize.CommonsChunkPlugin(['vendor']));
@@ -39,7 +39,15 @@ var pluginsHtml = new HtmlWebpackPlugin({
   filename: 'index.html',
   template: __dirname + '/src/' + nodeProject + '/index.html',
   inject: 'body',
-  chunks: ['vendor', 'index']
+  chunks: ['vendor', 'index'],
+  minify: {
+    // 去掉注释
+    removeComments: true,
+    // 去掉空格
+    collapseWhitespace: true,
+    // 删除标签上的引号
+    removeAttributeQuotes: true
+  }
 });
 plugins.push(pluginsHtml);
 

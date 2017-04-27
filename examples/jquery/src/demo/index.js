@@ -1,3 +1,4 @@
+import $ from 'jquery';
 $(function() {
-  $('#main').html('This is index page!');
+  console.log('index');
 });

@@ -1,10 +1,5 @@
-var fs = require('fs');
-var result = fs.existsSync('/Users/zhongzhuhua/ice/work/ff-edit/examples/react/src/demo/hello.jssdafasdf', function(err) {
-  console.log(err);
-});
-console.log(result);
-fs.createWriteStream('/Users/zhongzhuhua/ice/work/ff-edit/examples/react/src/demo/hello.js', '');
-
+let name = 'zhong';
+console.log(name);
 
 // var path = require('path');
 

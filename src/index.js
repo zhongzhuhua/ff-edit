@@ -9,6 +9,7 @@ jQuery.ajaxSetup({
     var name = $.trim($name.val());
     if (name == '' || name == 'demo') {
       if (this.url.indexOf('/actions/find') == -1) {
+        Loading.close();
         Toast.open('demo项目不能修改');
         return false;
       }
@@ -279,7 +280,7 @@ function getFile(fileName) {
         }
 
         if (codeType == 'html') {
-          editor.getSession().setMode('ace/mode/html');
+          editor.getSession().setMode('ace/mode/ejs');
         } else if (codeType == 'js') {
           editor.getSession().setMode('ace/mode/jsx');
         } else {
@@ -293,7 +294,7 @@ function getFile(fileName) {
   });
 };
 
-// 写页面
+// 构建页面
 function writeHtml() {
   if (issubmit) {
     return;
