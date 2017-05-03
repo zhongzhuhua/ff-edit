@@ -7,7 +7,9 @@ nav {
   padding: 0;
 }
 
-$color: blue;
-body {
-  color: $color;
+.v-home {
+  $color: blue;
+  body {
+    color: $color;
+  }
 }

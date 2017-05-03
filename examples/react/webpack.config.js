@@ -1,8 +1,12 @@
 var del = require('del');
 var webpack = require('webpack');
+var TransferWebpackPlugin = require('transfer-webpack-plugin');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
 var nodeProject = process.env.nodeProject || 'demo';
 del.sync('./dist/' + nodeProject);
+
+// 获取配置文件
+var userConfigs = require('./src/' + nodeProject + '/configs');
 
 // 配置入口文件
 var plugins = [];
@@ -16,10 +20,11 @@ plugins.push(new webpack.LoaderOptionsPlugin({
   }
 }));
 
+var cfgs = userConfigs.cfgs || { log: false, mock: true };
 var uglifyPlug = new webpack.optimize.UglifyJsPlugin({
   compress: {
     warnings: false,
-    drop_console: true
+    drop_console: !cfgs.log
   },
   output: {
     comments: false,
@@ -27,9 +32,17 @@ var uglifyPlug = new webpack.optimize.UglifyJsPlugin({
 });
 plugins.push(uglifyPlug);
 
+// mock 数据复制
+if (cfgs.mock) {
+  plugins.push(new TransferWebpackPlugin([{
+    from: './src/' + nodeProject + '/mock',
+    to: './mock'
+  }], __dirname));
+}
+
 // 配置是否热更新，是否需要 demo
 var entryMap = {
-  'vendor': ['react', 'react-dom', 'react-router-dom', 'reqwest'],
+  'vendor': ['react', 'react-dom', 'react-router', 'react-router-dom', 'reqwest'],
   'index': ['./index.js']
 };
 plugins.push(new webpack.optimize.CommonsChunkPlugin(['vendor']));
@@ -43,6 +56,13 @@ var pluginsHtml = new HtmlWebpackPlugin({
 });
 plugins.push(pluginsHtml);
 
+// 环境变量
+plugins.push(new webpack.DefinePlugin({
+  'process.env': {
+    NODE_ENV: JSON.stringify('production')
+  }
+}));
+
 module.exports = {
   // 跟目录
   context: __dirname + '/src/' + nodeProject,
@@ -55,7 +75,7 @@ module.exports = {
 
   // 脚本文件输出配置
   output: {
-    filename: '[name].[hash:6].js',
+    filename: '[name].[chunkhash:8].js',
     path: __dirname + '/dist/' + nodeProject + '/'
   },
 
@@ -67,7 +87,7 @@ module.exports = {
     }, {
       test: /\.(jpe?g|gif|png|ico|svg)$/,
       exclude: /node_modules/,
-      loader: 'url-loader?limit=8192&name=img/[name].[hash:4].[ext]'
+      loader: 'url-loader?limit=8192&name=img/[name].[chunkhash:4].[ext]'
     }, {
       test: /\.scss$/,
       exclude: /node_modules/,

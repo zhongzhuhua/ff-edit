@@ -1,6 +1,7 @@
 var del = require('del');
 var webpack = require('webpack');
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
+var TransferWebpackPlugin = require('transfer-webpack-plugin');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
 var nodeProject = process.env.nodeProject || 'demo';
 del.sync('./dist/' + nodeProject);
@@ -43,7 +44,8 @@ plugins.push(new webpack.LoaderOptionsPlugin({
   }
 }));
 
-var cfgs = userConfigs.cfgs || { log: false };
+// 脚本压缩
+var cfgs = userConfigs.cfgs || { log: false, mock: true };
 var uglifyPlug = new webpack.optimize.UglifyJsPlugin({
   compress: {
     warnings: false,
@@ -54,6 +56,14 @@ var uglifyPlug = new webpack.optimize.UglifyJsPlugin({
   }
 });
 plugins.push(uglifyPlug);
+
+// mock 数据复制
+if (cfgs.mock) {
+  plugins.push(new TransferWebpackPlugin([{
+    from: './src/' + nodeProject + '/mock',
+    to: './mock'
+  }], __dirname));
+}
 
 plugins.push(new ExtractTextPlugin('css/[name].[chunkhash:6].css'));
 
