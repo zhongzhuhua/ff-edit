@@ -12,6 +12,9 @@ dist
 *.zip
 *.rar
 node_modules
+examples
+!examples/*/src/demo
+!examples/*/dist/demo
 npm-debug.log
 *.log
 .DS_Store
